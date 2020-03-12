@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./library/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <title>Chat Room</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row log-in">
+            <form action="" id="messageForm">
+                <div class="form-group">
+                    <label for="">Enter Name</label>
+                    <input type="text" id="user-name">
+                    <br>
+                    <input type="submit" id="send-name-btn" value="Send" class="btn btn-primary">
+                </div>
+            </form>
+        </div>
+        <div class="chat-room">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>User Online</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group" id="users">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="chat" id="chat">
+                    </div>
+                    <hr>
+                    <form action="" id="messageForm">
+                        <div class="form-group">
+                            <label for="">Enter Message</label>
+                            <textarea name="" class="form-control" id="message" cols="5" rows="5"></textarea>
+                            <br>
+                            <input type="submit" id="send-message-btn" value="Send" class="btn btn-primary">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./library/scripts/jquery-3.4.1.min.js"></script>
+    <script src="./library/scripts/socket.io.js"></script>
+    <script>
+        $(function () {
+            var socket = io.connect();
+            $("#send-message-btn").click(function (e) {
+                e.preventDefault();
+                socket.emit("new message", $("#message").val());
+                $("#message").val("");
+            });
+
+            $("#send-name-btn").click(function (e) {
+                e.preventDefault();
+                socket.emit("new user", $("#user-name").val(), function (data) {
+                    if (data) {
+                        $(".log-in").hide();
+                        $(".chat-room").show();
+                    }
+                });
+            });
+
+            socket.on("received message", function (data) {
+                $("#chat").append("<div><strong>" + data.username + ": </strong>" + data.msg + "</div>")
+            });
+
+            socket.on("get users", function (data) {
+                $("#users").empty();
+                for (let i = 0; i < data.length; i++) {
+                    $("#users").append(`<li class="list-group-item">${data[i]}</li>`);
+                }
+            });
+        });
+
+    </script>
+</body>
+
+</html>
